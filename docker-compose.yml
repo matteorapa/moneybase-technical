@@ -22,7 +22,7 @@ services:
 
   postgres_db:
     image: postgres:latest
-    container_name: postgres_db
+    container_name: postgres_db 
     environment:
       - POSTGRES_USER=postgres
       - POSTGRES_PASSWORD=postgres
@@ -32,7 +32,7 @@ services:
     restart: always
     volumes:
       - mydata:/var/lib/postgresql/data/
-    networks:
+    networks: 
       - dev
   
   rabbitmq_queue:
