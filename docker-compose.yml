@@ -1,0 +1,50 @@
+﻿version: '3.4'
+
+networks:
+  dev:
+    driver: bridge
+
+services:
+  api-service:
+    image: mysupportapi
+    depends_on:
+      - "postgres_db"
+    container_name: api-service
+    ports:
+      - "5009:80"
+    build:
+      context: .
+      dockerfile: SupportAPI/Dockerfile
+    environment:
+      - ConnectionString=host=localhost;port=5435;database=support;username=postgres;password=postgres;Pooling=true;
+    networks:
+      - dev
+
+  postgres_db:
+    image: postgres:latest
+    container_name: postgres_db
+    environment:
+      - POSTGRES_USER=postgres
+      - POSTGRES_PASSWORD=postgres
+      - POSTGRES_DB=support
+    ports:
+      - "5432:5432"
+    restart: always
+    volumes:
+      - mydata:/var/lib/postgresql/data/
+    networks:
+      - dev
+  
+  rabbitmq_queue:
+    image: rabbitmq:management
+    container_name: queue
+    environment:
+      - RABBITMQ_DEFAULT_USER=guest
+      - RABBITMQ_DEFAULT_PASS=guest
+    ports:
+      - "5672:5672"
+      - "15672:15672"
+
+volumes:
+  mydata:
+    
