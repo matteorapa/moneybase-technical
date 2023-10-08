@@ -4,7 +4,11 @@ namespace SupportAPI.Interfaces;
 
 public interface ITeamService
 {
-    public Team GetCurrentTeam(DateTime currentDateTime);
+    public Task<Team> GetCurrentTeam(DateTime currentDateTime);
+    public Task<Team> GetOverflowTeam();
 
-    public int CalculateCapacityForTeam(Guid teamId);
+    public int CalculateCapacityForTeam(Team team);
+
+    public Task RequestOverflowTeam();
+    public Task<bool> CheckIsOverflowTeamWorking();
 }

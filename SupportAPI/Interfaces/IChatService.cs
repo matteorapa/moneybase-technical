@@ -4,6 +4,8 @@ namespace SupportAPI.Interfaces;
 
 public interface IChatService
 {
-    public ChatResultModel InitiateSupportRequest(string customerId);
-    public List<ChatResultModel> FetchAllChatsForAgent(string agentId);
+    public Task<ChatResultModel> InitiateSupportRequest(string customerId);
+    public Task<List<ChatResultModel>> FetchAllChatsForAgent(string agentId);
+
+    public Task AssignChatsFromQueue();
 }

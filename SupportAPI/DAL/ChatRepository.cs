@@ -18,6 +18,11 @@ public class ChatRepository
         return context.Chats.ToList();
     }
 
+    public IQueryable<Chat> GetQueryableChats()
+    {
+        return context.Chats;
+    }
+
     public Chat GetChatByID(int id)
     {
         return context.Chats.Find(id);

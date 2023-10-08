@@ -1,4 +1,7 @@
-﻿using SupportAPI.Common.Entities;
+﻿using Microsoft.EntityFrameworkCore;
+using SupportAPI.Common.Entities;
+using SupportAPI.Common.Enums;
+using SupportAPI.DAL;
 using SupportAPI.Interfaces;
 
 namespace SupportAPI.Services;
@@ -6,13 +9,81 @@ namespace SupportAPI.Services;
 public class TeamService : ITeamService
 {
     
-    public Team GetCurrentTeam(DateTime currentDateTime)
+    private ITeamRepository _teamRepository;
+
+    public TeamService(ITeamRepository teamRepository)
     {
-        throw new NotImplementedException();
+        _teamRepository = teamRepository;
     }
 
-    public int CalculateCapacityForTeam(Guid teamId)
+    public async Task<Team> GetCurrentTeam(DateTime currentDateTime)
     {
-        throw new NotImplementedException();
+        var currentTeam = await _teamRepository
+            .GetTeams()
+            .Where(t => t.IsOverflow == false)
+            .FirstAsync(t => t.StartAt >= currentDateTime && t.FinishAt <= currentDateTime);
+        return currentTeam;
+    }
+
+    public async Task<Team> GetOverflowTeam()
+    {
+        var overflowTeam = await _teamRepository
+            .GetTeams()
+            .Where(t => t.IsOverflow).FirstAsync();
+        return overflowTeam;
+    }
+
+    public int CalculateCapacityForTeam(Team team)
+    {
+        int teamCapacity = 0;
+        foreach (var agent in team.Agents)
+        {
+            if (agent.IsOnline)
+            {
+                var agentCapacity = GetCapacityForSeniority(agent.Seniority);
+                teamCapacity += agentCapacity;
+            }
+        }
+        return teamCapacity;
+    }
+
+    public async Task RequestOverflowTeam()
+    {
+        // get overflow team
+        var overflowTeam = await _teamRepository.GetTeams().Where(t => t.IsOverflow == false).FirstAsync();
+        overflowTeam.IsOnline = true;
+        _teamRepository.UpdateTeam(overflowTeam);
+        _teamRepository.Save();
+    }
+
+    public async Task<bool> CheckIsOverflowTeamWorking()
+    {
+        return await _teamRepository.GetTeams()
+            .Where(t => t.IsOverflow == false)
+            .Select(t => t.IsOnline)
+            .FirstAsync();
+    }
+
+    private int GetCapacityForSeniority(Seniority seniority)
+    {
+        double actualCapacity = 0;
+        var baseCapacity = 10;
+        switch (seniority)
+        {
+            case Seniority.Junior:
+                actualCapacity = baseCapacity * 0.4;
+                break;
+            case Seniority.MidLevel:
+                actualCapacity = baseCapacity * 0.6;
+                break;
+            case Seniority.Senior:
+                actualCapacity = baseCapacity * 0.8;
+                break;
+            case Seniority.TeamLead:
+                actualCapacity = baseCapacity * 0.5;
+                break;
+        }
+
+        return (int)actualCapacity;
     }
 }

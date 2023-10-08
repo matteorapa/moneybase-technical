@@ -8,6 +8,7 @@ public interface IChatRepository : IDisposable
 {
     
     IEnumerable<Chat> GetChats();
+    IQueryable<Chat> GetQueryableChats();
     Chat GetChatById(int chatId);
     void InsertChat(Chat chatObj);
     void DeleteChat(int chatId);
