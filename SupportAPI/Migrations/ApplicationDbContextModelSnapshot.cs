@@ -22,138 +22,6 @@ namespace SupportAPI.Migrations
 
             NpgsqlModelBuilderExtensions.UseIdentityByDefaultColumns(modelBuilder);
 
-            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRole", b =>
-                {
-                    b.Property<string>("Id")
-                        .HasColumnType("text");
-
-                    b.Property<string>("ConcurrencyStamp")
-                        .IsConcurrencyToken()
-                        .HasColumnType("text");
-
-                    b.Property<string>("Name")
-                        .HasMaxLength(256)
-                        .HasColumnType("character varying(256)");
-
-                    b.Property<string>("NormalizedName")
-                        .HasMaxLength(256)
-                        .HasColumnType("character varying(256)");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("NormalizedName")
-                        .IsUnique()
-                        .HasDatabaseName("RoleNameIndex");
-
-                    b.ToTable("AspNetRoles", (string)null);
-                });
-
-            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("ClaimType")
-                        .HasColumnType("text");
-
-                    b.Property<string>("ClaimValue")
-                        .HasColumnType("text");
-
-                    b.Property<string>("RoleId")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("RoleId");
-
-                    b.ToTable("AspNetRoleClaims", (string)null);
-                });
-
-            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<string>", b =>
-                {
-                    b.Property<int>("Id")
-                        .ValueGeneratedOnAdd()
-                        .HasColumnType("integer");
-
-                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
-
-                    b.Property<string>("ClaimType")
-                        .HasColumnType("text");
-
-                    b.Property<string>("ClaimValue")
-                        .HasColumnType("text");
-
-                    b.Property<string>("UserId")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.HasKey("Id");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("AspNetUserClaims", (string)null);
-                });
-
-            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<string>", b =>
-                {
-                    b.Property<string>("LoginProvider")
-                        .HasColumnType("text");
-
-                    b.Property<string>("ProviderKey")
-                        .HasColumnType("text");
-
-                    b.Property<string>("ProviderDisplayName")
-                        .HasColumnType("text");
-
-                    b.Property<string>("UserId")
-                        .IsRequired()
-                        .HasColumnType("text");
-
-                    b.HasKey("LoginProvider", "ProviderKey");
-
-                    b.HasIndex("UserId");
-
-                    b.ToTable("AspNetUserLogins", (string)null);
-                });
-
-            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserRole<string>", b =>
-                {
-                    b.Property<string>("UserId")
-                        .HasColumnType("text");
-
-                    b.Property<string>("RoleId")
-                        .HasColumnType("text");
-
-                    b.HasKey("UserId", "RoleId");
-
-                    b.HasIndex("RoleId");
-
-                    b.ToTable("AspNetUserRoles", (string)null);
-                });
-
-            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<string>", b =>
-                {
-                    b.Property<string>("UserId")
-                        .HasColumnType("text");
-
-                    b.Property<string>("LoginProvider")
-                        .HasColumnType("text");
-
-                    b.Property<string>("Name")
-                        .HasColumnType("text");
-
-                    b.Property<string>("Value")
-                        .HasColumnType("text");
-
-                    b.HasKey("UserId", "LoginProvider", "Name");
-
-                    b.ToTable("AspNetUserTokens", (string)null);
-                });
-
             modelBuilder.Entity("SupportAPI.Common.Entities.Chat", b =>
                 {
                     b.Property<Guid>("Id")
@@ -161,18 +29,17 @@ namespace SupportAPI.Migrations
                         .HasColumnType("uuid");
 
                     b.Property<string>("AgentId")
-                        .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<DateTime>("ClosedAt")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp without time zone");
 
                     b.Property<string>("CustomerId")
                         .IsRequired()
                         .HasColumnType("text");
 
                     b.Property<DateTime>("OpenedAt")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp without time zone");
 
                     b.Property<int>("Status")
                         .HasColumnType("integer");
@@ -196,11 +63,14 @@ namespace SupportAPI.Migrations
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<bool>("IsAgent")
+                    b.Property<Guid?>("ChatId")
+                        .HasColumnType("uuid");
+
+                    b.Property<bool>("IsSentByAgent")
                         .HasColumnType("boolean");
 
                     b.Property<DateTime>("SentAt")
-                        .HasColumnType("timestamp with time zone");
+                        .HasColumnType("timestamp without time zone");
 
                     b.Property<string>("Text")
                         .IsRequired()
@@ -210,6 +80,8 @@ namespace SupportAPI.Migrations
                         .HasColumnType("text");
 
                     b.HasKey("Id");
+
+                    b.HasIndex("ChatId");
 
                     b.HasIndex("UserId");
 
@@ -222,25 +94,77 @@ namespace SupportAPI.Migrations
                         .ValueGeneratedOnAdd()
                         .HasColumnType("uuid");
 
+                    b.Property<DateTime>("FinishAt")
+                        .HasColumnType("timestamp without time zone");
+
                     b.Property<bool>("IsNightShift")
                         .HasColumnType("boolean");
 
                     b.Property<bool>("IsOnline")
                         .HasColumnType("boolean");
 
+                    b.Property<bool>("IsOverflow")
+                        .HasColumnType("boolean");
+
                     b.Property<int>("MaxCapacity")
                         .HasColumnType("integer");
 
-                    b.Property<string>("Name")
+                    b.Property<DateTime>("StartAt")
+                        .HasColumnType("timestamp without time zone");
+
+                    b.Property<string>("TeamName")
                         .IsRequired()
                         .HasColumnType("text");
-
-                    b.Property<bool>("overflow")
-                        .HasColumnType("boolean");
 
                     b.HasKey("Id");
 
                     b.ToTable("Teams");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = new Guid("e491ffff-b197-4cdf-859c-a103bdf63fc5"),
+                            FinishAt = new DateTime(2023, 12, 31, 14, 0, 0, 0, DateTimeKind.Unspecified),
+                            IsNightShift = false,
+                            IsOnline = false,
+                            IsOverflow = false,
+                            MaxCapacity = 0,
+                            StartAt = new DateTime(2023, 12, 31, 6, 0, 0, 0, DateTimeKind.Unspecified),
+                            TeamName = "Team A"
+                        },
+                        new
+                        {
+                            Id = new Guid("675d7017-f2f6-4460-9405-36bcf16fbc1e"),
+                            FinishAt = new DateTime(2023, 12, 31, 22, 0, 0, 0, DateTimeKind.Unspecified),
+                            IsNightShift = false,
+                            IsOnline = false,
+                            IsOverflow = false,
+                            MaxCapacity = 0,
+                            StartAt = new DateTime(2023, 12, 31, 14, 0, 0, 0, DateTimeKind.Unspecified),
+                            TeamName = "Team B"
+                        },
+                        new
+                        {
+                            Id = new Guid("e6f027fb-2f6d-4f45-8d95-a53f1e813bec"),
+                            FinishAt = new DateTime(2023, 12, 31, 6, 0, 0, 0, DateTimeKind.Unspecified),
+                            IsNightShift = true,
+                            IsOnline = false,
+                            IsOverflow = false,
+                            MaxCapacity = 0,
+                            StartAt = new DateTime(2023, 12, 31, 22, 0, 0, 0, DateTimeKind.Unspecified),
+                            TeamName = "Team C"
+                        },
+                        new
+                        {
+                            Id = new Guid("1199495b-9684-4ab3-84f3-d6ff04ac8d83"),
+                            FinishAt = new DateTime(2023, 12, 31, 22, 0, 0, 0, DateTimeKind.Unspecified),
+                            IsNightShift = false,
+                            IsOnline = false,
+                            IsOverflow = true,
+                            MaxCapacity = 0,
+                            StartAt = new DateTime(2023, 12, 31, 6, 0, 0, 0, DateTimeKind.Unspecified),
+                            TeamName = "Overflow Team"
+                        });
                 });
 
             modelBuilder.Entity("SupportAPI.Common.Entities.User", b =>
@@ -248,67 +172,13 @@ namespace SupportAPI.Migrations
                     b.Property<string>("Id")
                         .HasColumnType("text");
 
-                    b.Property<int>("AccessFailedCount")
-                        .HasColumnType("integer");
-
-                    b.Property<string>("ConcurrencyStamp")
-                        .IsConcurrencyToken()
-                        .HasColumnType("text");
-
                     b.Property<string>("Discriminator")
                         .IsRequired()
                         .HasColumnType("text");
 
-                    b.Property<string>("Email")
-                        .HasMaxLength(256)
-                        .HasColumnType("character varying(256)");
-
-                    b.Property<bool>("EmailConfirmed")
-                        .HasColumnType("boolean");
-
-                    b.Property<bool>("LockoutEnabled")
-                        .HasColumnType("boolean");
-
-                    b.Property<DateTimeOffset?>("LockoutEnd")
-                        .HasColumnType("timestamp with time zone");
-
-                    b.Property<string>("NormalizedEmail")
-                        .HasMaxLength(256)
-                        .HasColumnType("character varying(256)");
-
-                    b.Property<string>("NormalizedUserName")
-                        .HasMaxLength(256)
-                        .HasColumnType("character varying(256)");
-
-                    b.Property<string>("PasswordHash")
-                        .HasColumnType("text");
-
-                    b.Property<string>("PhoneNumber")
-                        .HasColumnType("text");
-
-                    b.Property<bool>("PhoneNumberConfirmed")
-                        .HasColumnType("boolean");
-
-                    b.Property<string>("SecurityStamp")
-                        .HasColumnType("text");
-
-                    b.Property<bool>("TwoFactorEnabled")
-                        .HasColumnType("boolean");
-
-                    b.Property<string>("UserName")
-                        .HasMaxLength(256)
-                        .HasColumnType("character varying(256)");
-
                     b.HasKey("Id");
 
-                    b.HasIndex("NormalizedEmail")
-                        .HasDatabaseName("EmailIndex");
-
-                    b.HasIndex("NormalizedUserName")
-                        .IsUnique()
-                        .HasDatabaseName("UserNameIndex");
-
-                    b.ToTable("AspNetUsers", (string)null);
+                    b.ToTable("Users");
 
                     b.HasDiscriminator<string>("Discriminator").HasValue("User");
 
@@ -319,6 +189,9 @@ namespace SupportAPI.Migrations
                 {
                     b.HasBaseType("SupportAPI.Common.Entities.User");
 
+                    b.Property<bool>("IsOnline")
+                        .HasColumnType("boolean");
+
                     b.Property<int>("Seniority")
                         .HasColumnType("integer");
 
@@ -328,6 +201,120 @@ namespace SupportAPI.Migrations
                     b.HasIndex("TeamId");
 
                     b.HasDiscriminator().HasValue("Agent");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = "d3af35de-eebc-4966-a443-5a70dd21d44f",
+                            IsOnline = false,
+                            Seniority = 3,
+                            TeamId = new Guid("e491ffff-b197-4cdf-859c-a103bdf63fc5")
+                        },
+                        new
+                        {
+                            Id = "c546976c-ac25-4f8e-bb1c-d450e4be149f",
+                            IsOnline = false,
+                            Seniority = 1,
+                            TeamId = new Guid("e491ffff-b197-4cdf-859c-a103bdf63fc5")
+                        },
+                        new
+                        {
+                            Id = "d875a149-daee-48c7-adef-82d792963994",
+                            IsOnline = false,
+                            Seniority = 1,
+                            TeamId = new Guid("e491ffff-b197-4cdf-859c-a103bdf63fc5")
+                        },
+                        new
+                        {
+                            Id = "24bb36a8-d98f-4d90-83c5-a86a7c1287bd",
+                            IsOnline = false,
+                            Seniority = 0,
+                            TeamId = new Guid("e491ffff-b197-4cdf-859c-a103bdf63fc5")
+                        },
+                        new
+                        {
+                            Id = "95d5ba96-d9d8-4159-af92-965d2e42c56c",
+                            IsOnline = false,
+                            Seniority = 2,
+                            TeamId = new Guid("675d7017-f2f6-4460-9405-36bcf16fbc1e")
+                        },
+                        new
+                        {
+                            Id = "d4077d2b-281e-4ac8-a631-7c33acb5a8c9",
+                            IsOnline = false,
+                            Seniority = 1,
+                            TeamId = new Guid("675d7017-f2f6-4460-9405-36bcf16fbc1e")
+                        },
+                        new
+                        {
+                            Id = "37231e48-80d6-4003-b809-2cfff75f1573",
+                            IsOnline = false,
+                            Seniority = 1,
+                            TeamId = new Guid("675d7017-f2f6-4460-9405-36bcf16fbc1e")
+                        },
+                        new
+                        {
+                            Id = "fa73bd41-1589-4da9-a060-6a86745f2dd4",
+                            IsOnline = false,
+                            Seniority = 0,
+                            TeamId = new Guid("675d7017-f2f6-4460-9405-36bcf16fbc1e")
+                        },
+                        new
+                        {
+                            Id = "123b3625-e965-4bdd-99c5-b5d8c346cd75",
+                            IsOnline = false,
+                            Seniority = 1,
+                            TeamId = new Guid("e6f027fb-2f6d-4f45-8d95-a53f1e813bec")
+                        },
+                        new
+                        {
+                            Id = "f6df3a11-a0be-4656-81f8-25d8d0700fed",
+                            IsOnline = false,
+                            Seniority = 1,
+                            TeamId = new Guid("e6f027fb-2f6d-4f45-8d95-a53f1e813bec")
+                        },
+                        new
+                        {
+                            Id = "ae474024-aa1d-4aa3-83d1-9154a2a7028e",
+                            IsOnline = false,
+                            Seniority = 0,
+                            TeamId = new Guid("e6f027fb-2f6d-4f45-8d95-a53f1e813bec")
+                        },
+                        new
+                        {
+                            Id = "95c25b46-dd5f-459a-9abd-aa53a546fd12",
+                            IsOnline = false,
+                            Seniority = 0,
+                            TeamId = new Guid("e6f027fb-2f6d-4f45-8d95-a53f1e813bec")
+                        },
+                        new
+                        {
+                            Id = "d20f7ae0-cdea-4d35-ae99-6ebe20a69733",
+                            IsOnline = false,
+                            Seniority = 0,
+                            TeamId = new Guid("e6f027fb-2f6d-4f45-8d95-a53f1e813bec")
+                        },
+                        new
+                        {
+                            Id = "42c7a71a-23fa-4620-94a1-538d01eee12b",
+                            IsOnline = false,
+                            Seniority = 0,
+                            TeamId = new Guid("e6f027fb-2f6d-4f45-8d95-a53f1e813bec")
+                        },
+                        new
+                        {
+                            Id = "ecc90153-6e62-490c-b130-934ac75d1ced",
+                            IsOnline = false,
+                            Seniority = 0,
+                            TeamId = new Guid("e6f027fb-2f6d-4f45-8d95-a53f1e813bec")
+                        },
+                        new
+                        {
+                            Id = "cd91b628-8a22-4581-91f4-1f67f87b83e6",
+                            IsOnline = false,
+                            Seniority = 0,
+                            TeamId = new Guid("e6f027fb-2f6d-4f45-8d95-a53f1e813bec")
+                        });
                 });
 
             modelBuilder.Entity("SupportAPI.Common.Entities.Customer", b =>
@@ -338,66 +325,20 @@ namespace SupportAPI.Migrations
                         .HasColumnType("uuid");
 
                     b.HasDiscriminator().HasValue("Customer");
-                });
 
-            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityRoleClaim<string>", b =>
-                {
-                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole", null)
-                        .WithMany()
-                        .HasForeignKey("RoleId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-                });
-
-            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserClaim<string>", b =>
-                {
-                    b.HasOne("SupportAPI.Common.Entities.User", null)
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-                });
-
-            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserLogin<string>", b =>
-                {
-                    b.HasOne("SupportAPI.Common.Entities.User", null)
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-                });
-
-            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserRole<string>", b =>
-                {
-                    b.HasOne("Microsoft.AspNetCore.Identity.IdentityRole", null)
-                        .WithMany()
-                        .HasForeignKey("RoleId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-
-                    b.HasOne("SupportAPI.Common.Entities.User", null)
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
-                });
-
-            modelBuilder.Entity("Microsoft.AspNetCore.Identity.IdentityUserToken<string>", b =>
-                {
-                    b.HasOne("SupportAPI.Common.Entities.User", null)
-                        .WithMany()
-                        .HasForeignKey("UserId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                    b.HasData(
+                        new
+                        {
+                            Id = "3d2f8c6a-a206-4f99-a2ff-c5206c41741b",
+                            AccountId = new Guid("7100d2c8-918f-4d12-809b-28995482d85d")
+                        });
                 });
 
             modelBuilder.Entity("SupportAPI.Common.Entities.Chat", b =>
                 {
                     b.HasOne("SupportAPI.Common.Entities.Agent", "Agent")
-                        .WithMany()
-                        .HasForeignKey("AgentId")
-                        .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .WithMany("Chats")
+                        .HasForeignKey("AgentId");
 
                     b.HasOne("SupportAPI.Common.Entities.Customer", "Customer")
                         .WithMany()
@@ -412,6 +353,10 @@ namespace SupportAPI.Migrations
 
             modelBuilder.Entity("SupportAPI.Common.Entities.Message", b =>
                 {
+                    b.HasOne("SupportAPI.Common.Entities.Chat", null)
+                        .WithMany("Messages")
+                        .HasForeignKey("ChatId");
+
                     b.HasOne("SupportAPI.Common.Entities.User", "User")
                         .WithMany()
                         .HasForeignKey("UserId");
@@ -430,9 +375,19 @@ namespace SupportAPI.Migrations
                     b.Navigation("Team");
                 });
 
+            modelBuilder.Entity("SupportAPI.Common.Entities.Chat", b =>
+                {
+                    b.Navigation("Messages");
+                });
+
             modelBuilder.Entity("SupportAPI.Common.Entities.Team", b =>
                 {
                     b.Navigation("Agents");
+                });
+
+            modelBuilder.Entity("SupportAPI.Common.Entities.Agent", b =>
+                {
+                    b.Navigation("Chats");
                 });
 #pragma warning restore 612, 618
         }

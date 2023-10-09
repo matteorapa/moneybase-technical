@@ -4,7 +4,7 @@ using SupportAPI.Helpers;
 
 namespace SupportAPI.DAL;
 
-public class ChatRepository
+public class ChatRepository : IChatRepository
 {
     private ApplicationDbContext context;
 
@@ -23,29 +23,40 @@ public class ChatRepository
         return context.Chats;
     }
 
+    public Chat GetChatById(int chatId)
+    {
+        throw new NotImplementedException();
+    }
+
     public Chat GetChatByID(int id)
     {
         return context.Chats.Find(id);
     }
 
-    public void InsertChat(Chat Chat)
+    public void InsertChat(Chat chat)
     {
-        context.Chats.Add(Chat);
+        context.Chats.Add(chat);
     }
 
-    public void DeleteChat(int ChatID)
+    public void DeleteChat(int chatID)
     {
-        Chat Chat = context.Chats.Find(ChatID);
-        context.Chats.Remove(Chat);
+        Chat chat = context.Chats.Find(chatID);
+        context.Chats.Remove(chat);
     }
 
-    public void UpdateChat(Chat Chat)
+    public void UpdateChat(Chat chat)
     {
-        context.Entry(Chat).State = EntityState.Modified;
+        context.Entry(chat).State = EntityState.Modified;
     }
 
     public void Save()
     {
         context.SaveChanges();
     }
+    
+    public async Task SaveAsync()
+    {
+       await context.SaveChangesAsync();
+    }
+    
 }

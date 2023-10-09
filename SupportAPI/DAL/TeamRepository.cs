@@ -1,12 +1,41 @@
-﻿using SupportAPI.Common.Entities;
+﻿using Microsoft.EntityFrameworkCore;
+using SupportAPI.Common.Entities;
+using SupportAPI.Helpers;
 
 namespace SupportAPI.DAL;
 
 public class TeamRepository : ITeamRepository
 {
-    public IQueryable<Team> GetTeams()
+    
+    private ApplicationDbContext context;
+
+    public TeamRepository(ApplicationDbContext context)
     {
-        throw new NotImplementedException();
+        this.context = context;
+    }
+    
+    public IQueryable<Team> GetTeamsIncludeAgentsAndChats()
+
+    {
+        return context.Teams.AsQueryable();
+        // context.Teams.Include(t => t.Agents).ThenInclude(a => a.Chats).Select(t =>
+        // {
+        //     Agents = t.Agents.ForEach()
+        // });
+        // throw new NotImplementedException();
+        //
+        // var q = from d in Model.Discussions
+        //     select new DiscussionPresentation
+        //     {
+        //         Subject = d.Subject,
+        //         MessageCount = d.Messages.Count(),
+        //     };
+    }
+
+    public IQueryable<Team> GetTeams()
+
+    {
+        return context.Teams.AsQueryable();
     }
 
     public Team GetTeamById(int TeamId)

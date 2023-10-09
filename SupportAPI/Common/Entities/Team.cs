@@ -3,7 +3,7 @@
 public class Team
 {
     public Guid Id { get; set; }
-    public String Name { get; set; }
+    public string TeamName { get; set; }
     public int MaxCapacity { get; set; }
     public bool IsOverflow { get; set; }
     public bool IsOnline { get; set; }

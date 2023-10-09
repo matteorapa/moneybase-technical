@@ -14,12 +14,16 @@ public class ChatService : IChatService
     
     private IChatRepository _chatRepository;
     private ITeamService _teamService;
+    private IQueueProducer _queueProducer;
     private readonly IMapper _mapper;
+    private IConfiguration _configuration;
 
-    public ChatService(IChatRepository chatRepository, IMapper mapper, ITeamService teamService)
+    public ChatService(IChatRepository chatRepository, IMapper mapper, ITeamService teamService, IQueueProducer queueProducer, IConfiguration configuration)
     {
         _mapper = mapper;
         _teamService = teamService;
+        _queueProducer = queueProducer;
+        _configuration = configuration;
         _chatRepository = chatRepository;
     }
 
@@ -36,7 +40,7 @@ public class ChatService : IChatService
             };
         
             _chatRepository.InsertChat(newChat);
-            _chatRepository.Save();
+            await _chatRepository.SaveAsync();
         
         
             var model = _mapper.Map<ChatResultModel>(newChat);
@@ -45,22 +49,29 @@ public class ChatService : IChatService
             // first check if queue is at capacity based on active agents
             var currentTeamWorking = await _teamService.GetCurrentTeam(DateTime.Now);
             
-            // check if overflow team is active
-            var isOverflowTeamActive = await _teamService.CheckIsOverflowTeamWorking();
-            if (isOverflowTeamActive)
+            if (currentTeamWorking.IsNightShift == false)
             {
-                var overflowTeam = await _teamService.GetOverflowTeam();
-                var overflowTeamCapacity = _teamService.CalculateCapacityForTeam(overflowTeam);
-                maxQueueCapacity += overflowTeamCapacity;
+                // only consider overflow team during the day
+                
+                // check if overflow team is active
+                var isOverflowTeamActive = await _teamService.CheckIsOverflowTeamWorking();
+                if (isOverflowTeamActive)
+                {
+                    var overflowTeam = await _teamService.GetOverflowTeam();
+                    var overflowTeamCapacity = _teamService.CalculateCapacityForTeam(overflowTeam);
+                    maxQueueCapacity += overflowTeamCapacity;
+                }
             }
             
             var teamCapacity = _teamService.CalculateCapacityForTeam(currentTeamWorking);
             maxQueueCapacity += teamCapacity; 
-            const double capacityMultiplier = 1.5; //todo add in appsettings.json
+            const double capacityMultiplier = 1.5; 
+            
             maxQueueCapacity = maxQueueCapacity * capacityMultiplier;
-           
+            
             var currentQueueCount = 0; // the amount of support requests waiting in the queue
-
+            currentQueueCount = _queueProducer.GetMessageCount();
+            
             // compare with requests count in queue, either queue or reject the new chat
             if (currentQueueCount >= maxQueueCapacity)
             {
@@ -75,7 +86,7 @@ public class ChatService : IChatService
             else
             {
                 newChat.Status = Status.Queued;
-                //todo place in queue
+                await _queueProducer.PublishMessageToQueueAsync(newChat);
             }
             
             
@@ -84,7 +95,7 @@ public class ChatService : IChatService
         catch (Exception e)
         {
             Console.WriteLine(e);
-            return null;
+            throw;
         }
     }
     
@@ -93,6 +104,14 @@ public class ChatService : IChatService
         var chats =  _chatRepository.GetChats().ToList();
         var models = _mapper.Map<List<ChatResultModel>>(chats);
         return models;
+    }
+
+    public async Task<ChatResultModel> GetChat(Guid chatId)
+    {
+        var chat = await _chatRepository.GetQueryableChats()
+            .Where(c => c.Id == chatId).Include(c => c.Messages)
+            .FirstOrDefaultAsync();
+        return _mapper.Map<ChatResultModel>(chat);
     }
 
     public async Task AssignChatsFromQueue()
@@ -114,6 +133,12 @@ public class ChatService : IChatService
         var queuedChats = await _chatRepository.GetQueryableChats()
             .Where(c => c.Status == Status.Queued)
             .ToListAsync();
+        
+        //todo use single thread
+        
+        //count opened assigned chats for each agent
+        
+        
 
         foreach (var chat in queuedChats)
         {

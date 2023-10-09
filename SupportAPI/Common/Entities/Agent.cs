@@ -9,4 +9,6 @@ public class Agent : User
     public Team Team { get; set; }
     public Guid TeamId { get; set; } 
     public bool IsOnline { get; set; }
+    
+    public List<Chat> Chats { get; set; }
 }

@@ -5,8 +5,24 @@ networks:
     driver: bridge
 
 services:
+  # consumer-service:
+  #   image: supportconsoleapp
+  #   depends_on:
+  #   - "postgres_db"
+  #   container_name: consumer-service
+  #   ports:
+  #     - "4010:80"
+  #   build:
+  #     context: .
+  #     dockerfile: SupportConsoleApplication/Dockerfile
+  #   environment:
+  #     - ConnectionString=host=localhost;port=5435;database=support;username=postgres;password=postgres;Pooling=true;
+  #   networks:
+  #     - dev
+  
+    
   api-service:
-    image: mysupportapi
+    image: supportapi
     depends_on:
       - "postgres_db"
     container_name: api-service

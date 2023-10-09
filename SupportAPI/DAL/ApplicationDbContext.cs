@@ -1,10 +1,11 @@
 ﻿using Microsoft.AspNetCore.Identity.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using SupportAPI.Common.Entities;
+using SupportAPI.DAL;
 
 namespace SupportAPI.Helpers;
 
-public class ApplicationDbContext : IdentityDbContext<User>
+public class ApplicationDbContext : DbContext
 {
     public ApplicationDbContext(DbContextOptions<ApplicationDbContext> options) : base(options)
     {
@@ -16,5 +17,15 @@ public class ApplicationDbContext : IdentityDbContext<User>
     public DbSet<User> Users { get; set; }
     public DbSet<Customer> Agents { get; set; }
     public DbSet<Agent> Customers { get; set; }
+    
+    protected override void OnModelCreating(ModelBuilder modelBuilder)
+    {
+        modelBuilder.Seed();
+    }
+    
+    public Task<int> SaveChangesAsync()
+    {
+        return base.SaveChangesAsync();
+    }
     
 }

@@ -15,24 +15,33 @@ public class ChatController : ControllerBase
     }
 
 
-    [HttpGet(Name = "GetAgentChats")]
-    public IActionResult Get()
+    [HttpGet]
+    [Route("Agent/{agentId}")]
+    public async Task<IActionResult> GetAllChatsForAgent(string agentId)
     {
-        
-        return NoContent();
+        var chats = await _chatService.FetchAllChatsForAgent(agentId);
+        return Ok(chats);
+    }
+    
+    [HttpGet]
+    [Route("{chatId}")]
+    public async Task<IActionResult> GetChat(string chatId)
+    {
+        var chat = await _chatService.GetChat(Guid.Parse(chatId));
+        if (chat is null)
+        {
+            return NotFound();
+        }
+        return Ok(chat);
     }
     
     [HttpPost]
     [Route("InitiateSupportRequest/{customerId}")]
-    public IActionResult PostChat(string customerId)
+    public async Task<IActionResult> PostChat(string customerId)
     {
-        var model = _chatService.InitiateSupportRequest(customerId);
-        if (model is null)
-        {
-            return NoContent();
-        }
+		
+        var model = await _chatService.InitiateSupportRequest(customerId);
         return Ok(model);
-        
     }
     
 }

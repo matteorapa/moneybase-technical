@@ -15,13 +15,14 @@ public class TeamService : ITeamService
     {
         _teamRepository = teamRepository;
     }
-
+ 
     public async Task<Team> GetCurrentTeam(DateTime currentDateTime)
     {
         var currentTeam = await _teamRepository
             .GetTeams()
             .Where(t => t.IsOverflow == false)
-            .FirstAsync(t => t.StartAt >= currentDateTime && t.FinishAt <= currentDateTime);
+            .Include(t => t.Agents)
+            .FirstOrDefaultAsync(t => currentDateTime.Hour >= t.StartAt.Hour && currentDateTime.Hour < t.FinishAt.Hour);
         return currentTeam;
     }
 
@@ -29,7 +30,7 @@ public class TeamService : ITeamService
     {
         var overflowTeam = await _teamRepository
             .GetTeams()
-            .Where(t => t.IsOverflow).FirstAsync();
+            .Where(t => t.IsOverflow).FirstOrDefaultAsync();
         return overflowTeam;
     }
 
@@ -59,7 +60,7 @@ public class TeamService : ITeamService
     public async Task<bool> CheckIsOverflowTeamWorking()
     {
         return await _teamRepository.GetTeams()
-            .Where(t => t.IsOverflow == false)
+            .Where(t => t.IsOverflow == true)
             .Select(t => t.IsOnline)
             .FirstAsync();
     }

@@ -1,5 +1,6 @@
 ﻿using AutoMapper;
 using Microsoft.EntityFrameworkCore;
+using SupportAPI.DAL;
 using SupportAPI.Interfaces;
 using SupportAPI.Services;
 
@@ -10,8 +11,13 @@ public static class DInjectionServices
     public static void AddApiServices(this IServiceCollection services)
     {
         services.AddScoped<IChatService, ChatService>();
+        services.AddScoped<ITeamService, TeamService>();
+        services.AddScoped<IMessageService, MessageService>();
+        services.AddScoped<IChatRepository, ChatRepository>();
+        services.AddScoped<ITeamRepository, TeamRepository>();
+        services.AddScoped<IMessageRepository, MessageRepository>();
+        services.AddScoped<IQueueProducer, QueueProducerService>();
         
-            
         var config = new MapperConfiguration(cfg =>
         {
             cfg.AddProfile(new AutoMapperProfile());
@@ -27,7 +33,9 @@ public static class DInjectionServices
         var connectionStringDb = configuration["ConnectionString"];
         services.AddDbContext<ApplicationDbContext>(options =>
             options.UseNpgsql(connectionStringDb)
-                .EnableDetailedErrors(), ServiceLifetime.Transient);
+                .EnableDetailedErrors(), ServiceLifetime.Singleton);
+        
+        AppContext.SetSwitch("Npgsql.EnableLegacyTimestampBehavior", true);
 
         return services;
     }

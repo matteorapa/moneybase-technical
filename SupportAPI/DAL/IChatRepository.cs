@@ -4,7 +4,7 @@ using SupportAPI.Common.Entities;
 
 namespace SupportAPI.DAL;
 
-public interface IChatRepository : IDisposable
+public interface IChatRepository
 {
     
     IEnumerable<Chat> GetChats();
@@ -14,6 +14,8 @@ public interface IChatRepository : IDisposable
     void DeleteChat(int chatId);
     void UpdateChat(Chat chatObj);
     void Save();
+
+    Task SaveAsync();
 }
 
 

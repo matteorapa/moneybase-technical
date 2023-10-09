@@ -1,8 +1,9 @@
-﻿using Microsoft.AspNetCore.Identity;
+﻿using System.ComponentModel.DataAnnotations;
 
 namespace SupportAPI.Common.Entities;
 
-public class User : IdentityUser
+public class User
 {
-    
+    [Key]
+    public string Id { get; set; }
 }
