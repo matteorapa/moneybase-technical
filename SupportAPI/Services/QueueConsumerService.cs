@@ -1,30 +1,22 @@
 ﻿using System.Text;
-using Newtonsoft.Json;
 using RabbitMQ.Client;
 using RabbitMQ.Client.Events;
 using SupportAPI.Interfaces;
 
 namespace SupportAPI.Services;
 
-public class QueueProducerService : IQueueProducer
+public class QueueConsumerService : IQueueConsumer
 {
     private IConfiguration _configuration;
     private IModel _model;
 
-    public QueueProducerService(IConfiguration configuration)
+    public QueueConsumerService(IConfiguration configuration)
     {
         _configuration = configuration;
         _model = CreateConnectionToChannel();
         Setup(_model);
     }
-
-    public int GetMessageCount()
-    {
-        using IModel channel = CreateConnectionToChannel();
-        
-        return (int)channel.MessageCount(_configuration.GetSection("RabbitMq:QueueName").Value);
-    }
-
+    
     private IModel CreateConnectionToChannel()
     {
         var factory = new ConnectionFactory {
@@ -38,7 +30,7 @@ public class QueueProducerService : IQueueProducer
         var model = connection.CreateModel();
         return model;
     }
-
+    
     private void Setup(IModel connection)
     {
         using IModel model = CreateConnectionToChannel();
@@ -51,21 +43,18 @@ public class QueueProducerService : IQueueProducer
         model.QueueBind(queueName, exchangeName, routingKey);
         
     }
-
     
-    public async Task PublishMessageToQueueAsync<T>(T message)
+    public async Task<Guid> ConsumeMessageFromQueue()
     {
-        var model = CreateConnectionToChannel();
-        
-        var exchangeName = _configuration.GetSection("RabbitMq:ExchangeName").Value;
-        var routingKey = _configuration.GetSection("RabbitMq:RoutingKey").Value;
-        
-        //Serialize the message
-        var json = JsonConvert.SerializeObject(message);
-        var body = Encoding.UTF8.GetBytes(json);
-        
-        model.BasicPublish(exchange: exchangeName, routingKey: routingKey, body: body);
+        string receivedChatId = "";
+        var consumer = new EventingBasicConsumer(_model);
+        consumer.Received += (model, eventArgs) => {
+            var body = eventArgs.Body.ToArray();
+            var message = Encoding.UTF8.GetString(body);
+            receivedChatId = message;
+        };
+        _model.BasicConsume(queue: "chatQueue", autoAck: true, consumer: consumer);
+        return Guid.Parse(receivedChatId);
+
     }
 }
-
-

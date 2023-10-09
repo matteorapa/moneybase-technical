@@ -17,6 +17,7 @@ public static class DInjectionServices
         services.AddScoped<ITeamRepository, TeamRepository>();
         services.AddScoped<IMessageRepository, MessageRepository>();
         services.AddScoped<IQueueProducer, QueueProducerService>();
+        services.AddScoped<IQueueConsumer, QueueConsumerService>();
         
         var config = new MapperConfiguration(cfg =>
         {

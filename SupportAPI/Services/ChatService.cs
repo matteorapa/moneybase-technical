@@ -17,15 +17,17 @@ public class ChatService : IChatService
     private IChatRepository _chatRepository;
     private ITeamService _teamService;
     private IQueueProducer _queueProducer;
+    private IQueueConsumer _queueConsumer;
     private readonly IMapper _mapper;
     private IConfiguration _configuration;
 
-    public ChatService(IChatRepository chatRepository, IMapper mapper, ITeamService teamService, IQueueProducer queueProducer, IConfiguration configuration)
+    public ChatService(IChatRepository chatRepository, IMapper mapper, ITeamService teamService, IQueueProducer queueProducer, IConfiguration configuration, IQueueConsumer queueConsumer)
     {
         _mapper = mapper;
         _teamService = teamService;
         _queueProducer = queueProducer;
         _configuration = configuration;
+        _queueConsumer = queueConsumer;
         _chatRepository = chatRepository;
     }
 
@@ -91,7 +93,7 @@ public class ChatService : IChatService
                 newChat.Status = Status.Queued;
                 _chatRepository.UpdateChat(newChat);
                 await _chatRepository.SaveAsync();
-                await _queueProducer.PublishMessageToQueueAsync(newChat);
+                await _queueProducer.PublishMessageToQueueAsync(newChat.Id.ToString());
                 
                 // todo background job / console app
                 await AssignChatsFromQueue();
@@ -146,21 +148,42 @@ public class ChatService : IChatService
         //todo use single thread safety
         
         //count opened assigned chats for each agent
+        // if a slot is available in at least one agent,
+        // assign to agent, by consuming from queue
         
-        
-
-        foreach (var chat in queuedChats)
-        {
-            
-        }
-        
+        var agentIds = new List<string>();
         foreach (var agent in agentsWorking)
         {
-            
+            agentIds.Add(agent.Id);
         }
+        var models = await _chatRepository.GetChatCountForAgents(agentIds);
+        var modelsOrdered = models.OrderBy(m => m.Seniority).ToList();
         
+        foreach (var agent in modelsOrdered)
+        {
+            var maxAgentCapacity = _teamService.GetCapacityForSeniority(agent.Seniority);
+            if (agent.ChatCount < maxAgentCapacity)
+            {
+                // agent has capacity for at least one more chat
+                await ConsumeAndAssign(agent.Id);
+                break;
+            }
+        }
+    }
+
+    private async Task ConsumeAndAssign(string agentId)
+    {
+        // consume
+        var chatId = await _queueConsumer.ConsumeMessageFromQueue();
         // update status for chat
-        
+        var chat = await _chatRepository.GetQueryableChats().FirstOrDefaultAsync(c => c.Id == chatId);
+        if (chat is not null)
+        {
+            chat.Status = Status.Opened;
+            chat.AgentId = agentId;
+            _chatRepository.UpdateChat(chat);
+            await _chatRepository.SaveAsync();
+        }
     }
 
     public async Task<bool> Close(Guid chatId)

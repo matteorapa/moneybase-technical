@@ -67,7 +67,7 @@ public class TeamService : ITeamService
             .FirstAsync();
     }
 
-    private int GetCapacityForSeniority(Seniority seniority)
+    public int GetCapacityForSeniority(Seniority seniority)
     {
         double actualCapacity = 0;
         var baseCapacity = 10;

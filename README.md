@@ -31,5 +31,6 @@ Restart the containers, to use updated database.
 
 `docker-compose restart`
 
+The attemp for consume from queue happens whenever a new support request is created or when an existing support request is marked as closed.
 
 For the purpose I did not implement authentication for brevity. One may use Json Web Tokens for stateless authentication, suitable for a scalable API.

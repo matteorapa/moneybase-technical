@@ -6,4 +6,5 @@ public class User
 {
     [Key]
     public string Id { get; set; }
+    public List<Chat>? Chats { get; set; }
 }

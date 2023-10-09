@@ -1,5 +1,7 @@
 ﻿using Microsoft.EntityFrameworkCore;
 using SupportAPI.Common.Entities;
+using SupportAPI.Common.Enums;
+using SupportAPI.Common.Models;
 using SupportAPI.Helpers;
 
 namespace SupportAPI.DAL;
@@ -16,6 +18,20 @@ public class ChatRepository : IChatRepository
     public IEnumerable<Chat> GetChats()
     {
         return context.Chats.ToList();
+    }
+    
+    public async Task<List<UserQueryModel>> GetChatCountForAgents(List<string> agentIds)
+    {
+        var models = await context.Agents.Where(a => agentIds.Contains(a.Id))
+            .Include(u => u.Chats)
+            .Select(u => new UserQueryModel()
+            {
+                Id = u.Id,
+                Seniority = u.Seniority,
+                ChatCount = u.Chats.Count(c => c.Status == Status.Queued)
+            }).ToListAsync();
+
+        return models;
     }
 
     public IQueryable<Chat> GetQueryableChats()

@@ -15,8 +15,8 @@ public class ApplicationDbContext : DbContext
     public DbSet<Team> Teams { get; set; }
     public DbSet<Message> Messages { get; set; }
     public DbSet<User> Users { get; set; }
-    public DbSet<Customer> Agents { get; set; }
-    public DbSet<Agent> Customers { get; set; }
+    public DbSet<Agent> Agents { get; set; }
+    public DbSet<Customer> Customers { get; set; }
     
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
