@@ -60,12 +60,12 @@ public static class ModelBuilderExtensions
             new Agent { Id = Guid.NewGuid().ToString(), TeamId = Guid.Parse("e6f027fb-2f6d-4f45-8d95-a53f1e813bec"), Seniority = Seniority.MidLevel, IsOnline = true },
             
             // agents for overflow team
-            new Agent { Id = Guid.NewGuid().ToString(), TeamId = Guid.Parse("e6f027fb-2f6d-4f45-8d95-a53f1e813bec"), Seniority = Seniority.Junior, IsOnline = true },
-            new Agent { Id = Guid.NewGuid().ToString(), TeamId = Guid.Parse("e6f027fb-2f6d-4f45-8d95-a53f1e813bec"), Seniority = Seniority.Junior, IsOnline = true },
-            new Agent { Id = Guid.NewGuid().ToString(), TeamId = Guid.Parse("e6f027fb-2f6d-4f45-8d95-a53f1e813bec"), Seniority = Seniority.Junior, IsOnline = true },
-            new Agent { Id = Guid.NewGuid().ToString(), TeamId = Guid.Parse("e6f027fb-2f6d-4f45-8d95-a53f1e813bec"), Seniority = Seniority.Junior, IsOnline = true },
-            new Agent { Id = Guid.NewGuid().ToString(), TeamId = Guid.Parse("e6f027fb-2f6d-4f45-8d95-a53f1e813bec"), Seniority = Seniority.Junior, IsOnline = true },
-            new Agent { Id = Guid.NewGuid().ToString(), TeamId = Guid.Parse("e6f027fb-2f6d-4f45-8d95-a53f1e813bec"), Seniority = Seniority.Junior, IsOnline = true }
+            new Agent { Id = Guid.NewGuid().ToString(), TeamId = Guid.Parse("1199495b-9684-4ab3-84f3-d6ff04ac8d83"), Seniority = Seniority.Junior, IsOnline = true },
+            new Agent { Id = Guid.NewGuid().ToString(), TeamId = Guid.Parse("1199495b-9684-4ab3-84f3-d6ff04ac8d83"), Seniority = Seniority.Junior, IsOnline = true },
+            new Agent { Id = Guid.NewGuid().ToString(), TeamId = Guid.Parse("1199495b-9684-4ab3-84f3-d6ff04ac8d83"), Seniority = Seniority.Junior, IsOnline = true },
+            new Agent { Id = Guid.NewGuid().ToString(), TeamId = Guid.Parse("1199495b-9684-4ab3-84f3-d6ff04ac8d83"), Seniority = Seniority.Junior, IsOnline = true },
+            new Agent { Id = Guid.NewGuid().ToString(), TeamId = Guid.Parse("1199495b-9684-4ab3-84f3-d6ff04ac8d83"), Seniority = Seniority.Junior, IsOnline = true },
+            new Agent { Id = Guid.NewGuid().ToString(), TeamId = Guid.Parse("1199495b-9684-4ab3-84f3-d6ff04ac8d83"), Seniority = Seniority.Junior, IsOnline = true }
         );
 
 

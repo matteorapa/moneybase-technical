@@ -2,5 +2,5 @@
 
 public interface IQueueConsumer
 {
-    Task<Guid> ConsumeMessageFromQueue();
+    Guid ConsumeMessageFromQueue();
 }

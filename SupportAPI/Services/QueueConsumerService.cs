@@ -44,17 +44,20 @@ public class QueueConsumerService : IQueueConsumer
         
     }
     
-    public async Task<Guid> ConsumeMessageFromQueue()
+    public Guid ConsumeMessageFromQueue()
     {
-        string receivedChatId = "";
+        var chatId = "";
         var consumer = new EventingBasicConsumer(_model);
+        
         consumer.Received += (model, eventArgs) => {
             var body = eventArgs.Body.ToArray();
             var message = Encoding.UTF8.GetString(body);
-            receivedChatId = message;
+            chatId = message;
         };
+        
         _model.BasicConsume(queue: "chatQueue", autoAck: true, consumer: consumer);
-        return Guid.Parse(receivedChatId);
-
+        
+        //todo issue here chatId not updating
+        return Guid.Parse(chatId);
     }
 }

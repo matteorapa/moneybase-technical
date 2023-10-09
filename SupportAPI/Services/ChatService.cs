@@ -86,6 +86,7 @@ public class ChatService : IChatService
                 {
                     // get overflow team online
                     await _teamService.RequestOverflowTeam();
+                    await AssignChatsFromQueue();
                 }
             }
             else
@@ -174,7 +175,7 @@ public class ChatService : IChatService
     private async Task ConsumeAndAssign(string agentId)
     {
         // consume
-        var chatId = await _queueConsumer.ConsumeMessageFromQueue();
+        var chatId = _queueConsumer.ConsumeMessageFromQueue();
         // update status for chat
         var chat = await _chatRepository.GetQueryableChats().FirstOrDefaultAsync(c => c.Id == chatId);
         if (chat is not null)
