@@ -1,6 +1,8 @@
-﻿using AutoMapper;
+﻿using System.Text;
+using AutoMapper;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
+using RabbitMQ.Client.Events;
 using SupportAPI.Common.Entities;
 using SupportAPI.Common.Enums;
 using SupportAPI.Common.Models;
@@ -36,7 +38,8 @@ public class ChatService : IChatService
             {
                 Id = Guid.NewGuid(),
                 CustomerId = customerId,
-                OpenedAt = DateTime.Now
+                OpenedAt = DateTime.Now,
+                Status = Status.Rejected
             };
         
             _chatRepository.InsertChat(newChat);
@@ -76,17 +79,22 @@ public class ChatService : IChatService
             if (currentQueueCount >= maxQueueCapacity)
             {
                 // reject the support request due to many demand
-                newChat.Status = Status.Rejected;
-                _chatRepository.UpdateChat(newChat);
-                _chatRepository.Save();
-                
-                // get overflow team online
-                await _teamService.RequestOverflowTeam();
+
+                if (currentTeamWorking.IsNightShift == false)
+                {
+                    // get overflow team online
+                    await _teamService.RequestOverflowTeam();
+                }
             }
             else
             {
                 newChat.Status = Status.Queued;
+                _chatRepository.UpdateChat(newChat);
+                await _chatRepository.SaveAsync();
                 await _queueProducer.PublishMessageToQueueAsync(newChat);
+                
+                // todo background job / console app
+                await AssignChatsFromQueue();
             }
             
             
@@ -114,6 +122,7 @@ public class ChatService : IChatService
         return _mapper.Map<ChatResultModel>(chat);
     }
 
+    
     public async Task AssignChatsFromQueue()
     {
         var agentsWorking = new List<Agent>();
@@ -134,7 +143,7 @@ public class ChatService : IChatService
             .Where(c => c.Status == Status.Queued)
             .ToListAsync();
         
-        //todo use single thread
+        //todo use single thread safety
         
         //count opened assigned chats for each agent
         
@@ -150,8 +159,23 @@ public class ChatService : IChatService
             
         }
         
+        // update status for chat
         
+    }
+
+    public async Task<bool> Close(Guid chatId)
+    {
+        var chat = await _chatRepository.GetQueryableChats().FirstOrDefaultAsync(c => c.Id == chatId);
+        if (chat is not null)
+        {
+            chat.Status = Status.Closed;
         
-        throw new NotImplementedException();
+            _chatRepository.UpdateChat(chat);
+            await _chatRepository.SaveAsync();
+
+            await AssignChatsFromQueue();
+            return true;
+        }
+        return false;
     }
 }

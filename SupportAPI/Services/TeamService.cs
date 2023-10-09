@@ -30,7 +30,9 @@ public class TeamService : ITeamService
     {
         var overflowTeam = await _teamRepository
             .GetTeams()
-            .Where(t => t.IsOverflow).FirstOrDefaultAsync();
+            .Where(t => t.IsOverflow)
+            .Include(t => t.Agents)
+            .FirstOrDefaultAsync();
         return overflowTeam;
     }
 

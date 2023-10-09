@@ -44,4 +44,18 @@ public class ChatController : ControllerBase
         return Ok(model);
     }
     
+    [HttpPost]
+    [Route("Close/{chatId}")]
+    public async Task<IActionResult> PostChat(Guid chatId)
+    {
+		
+        var completed = await _chatService.Close(chatId);
+        if (completed)
+        {
+            return NoContent();
+        }
+
+        return NotFound();
+    }
+    
 }

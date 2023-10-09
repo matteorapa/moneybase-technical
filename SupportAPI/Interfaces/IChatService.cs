@@ -8,4 +8,6 @@ public interface IChatService
     public Task<List<ChatResultModel>> FetchAllChatsForAgent(string agentId);
     public Task<ChatResultModel> GetChat(Guid chatId);
     public Task AssignChatsFromQueue();
+
+    public Task<bool> Close(Guid chatId);
 }

@@ -1,6 +1,7 @@
 ﻿using System.Text;
 using Newtonsoft.Json;
 using RabbitMQ.Client;
+using RabbitMQ.Client.Events;
 using SupportAPI.Interfaces;
 
 namespace SupportAPI.Services;
@@ -8,13 +9,23 @@ namespace SupportAPI.Services;
 public class QueueProducerService : IQueueProducer
 {
     private IConfiguration _configuration;
+    private IModel _model;
 
     public QueueProducerService(IConfiguration configuration)
     {
         _configuration = configuration;
+        _model = CreateConnectionToChannel();
+        Setup(_model);
     }
 
     public int GetMessageCount()
+    {
+        using IModel channel = CreateConnectionToChannel();
+        
+        return (int)channel.MessageCount(_configuration.GetSection("RabbitMq:QueueName").Value);
+    }
+
+    private IModel CreateConnectionToChannel()
     {
         var factory = new ConnectionFactory {
             HostName = _configuration.GetSection("RabbitMq:Hostname").Value,
@@ -22,43 +33,49 @@ public class QueueProducerService : IQueueProducer
             UserName = _configuration.GetSection("RabbitMq:Username").Value,
             Password = _configuration.GetSection("RabbitMq:Password").Value
         };
-        using (IConnection connection = factory.CreateConnection())
-        using (IModel channel = connection.CreateModel())
-        {
-            return (int)channel.MessageCount(_configuration.GetSection("RabbitMq:QueueName").Value);
-        }
+        
+        var connection = factory.CreateConnection();
+        var model = connection.CreateModel();
+        return model;
+    }
+
+    private void Setup(IModel connection)
+    {
+        using IModel model = CreateConnectionToChannel();
+        var queueName = _configuration.GetSection("RabbitMq:QueueName").Value;
+        var exchangeName = _configuration.GetSection("RabbitMq:ExchangeName").Value;
+        var routingKey = _configuration.GetSection("RabbitMq:RoutingKey").Value;
+        
+        model.ExchangeDeclare(exchangeName, ExchangeType.Direct);
+        model.QueueDeclare(queueName, exclusive: false);
+        model.QueueBind(queueName, exchangeName, routingKey);
+        
+    }
+
+    public async Task<Guid> ConsumeMessageFromQueue()
+    {
+       
+        var consumer = new EventingBasicConsumer(_model);
+        consumer.Received += (model, eventArgs) => {
+            var body = eventArgs.Body.ToArray();
+            var message = Encoding.UTF8.GetString(body);
+        };
+        
+        _model.BasicConsume(queue: "chatQueue", autoAck: true, consumer: consumer);
+        
     }
     public async Task PublishMessageToQueueAsync<T>(T message)
     {
-        //Here we specify the Rabbit MQ Server. we use rabbitmq docker image and use it
-        var factory = new ConnectionFactory {
-            HostName = "localhost",
-            Port = 5672,
-            UserName = "guest",
-            Password = "guest"
-        };
-        //Create the RabbitMQ connection using connection factory details as i mentioned above
+        var model = CreateConnectionToChannel();
         
-        var connection = factory.CreateConnection();
-        //Here we create channel with session and model
-        
-        
-        // create exchange
-        var model = connection.CreateModel();
-        
-        model.ExchangeDeclare("supportExchange", ExchangeType.Direct);
-        
-        //declare the queue after mentioning name and a few property related to that
-        
-        model.QueueDeclare("chatqueue", exclusive: false);
-        
-        model.QueueBind("chatqueue", "supportExchange", "chat");
+        var exchangeName = _configuration.GetSection("RabbitMq:ExchangeName").Value;
+        var routingKey = _configuration.GetSection("RabbitMq:RoutingKey").Value;
         
         //Serialize the message
         var json = JsonConvert.SerializeObject(message);
         var body = Encoding.UTF8.GetBytes(json);
-        //put the data on to the product queue
-        model.BasicPublish(exchange: "supportExchange", routingKey: "chat", body: body);
+        
+        model.BasicPublish(exchange: exchangeName, routingKey: routingKey, body: body);
     }
 }
 
